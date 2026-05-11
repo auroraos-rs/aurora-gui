@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=com.lmaxyz.egui_aurora_app
+Exec=/usr/bin/com.lmaxyz.egui_aurora_app
+Name=egui_aurora_app
+Name[ru]=egui_aurora_app
+
+[X-Application]
+OrganizationName=com.lmaxyz
+ApplicationName=egui_aurora_app

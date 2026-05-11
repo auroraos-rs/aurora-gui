@@ -1,0 +1,11 @@
+[target.aarch64-unknown-linux-gnu]
+pre-build = [
+    "dpkg --add-architecture $CROSS_DEB_ARCH",
+    "apt update && apt install libdbus-1-dev:$CROSS_DEB_ARCH -y",
+]
+
+[target.armv7-unknown-linux-gnueabihf]
+pre-build = [
+    "dpkg --add-architecture $CROSS_DEB_ARCH",
+    "apt update && apt install libdbus-1-dev:$CROSS_DEB_ARCH -y",
+]
