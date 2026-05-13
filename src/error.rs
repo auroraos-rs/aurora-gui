@@ -31,6 +31,9 @@ pub enum AppError {
 
     #[error("event loop error: {0}")]
     EventLoop(String),
+
+    #[error("failed to initialize platform services: {0}")]
+    PlatformServices(String),
 }
 
 pub type Result<T> = std::result::Result<T, AppError>;

@@ -1,38 +1,37 @@
-use crate::config::AppConfig;
 use crate::error::{AppError, Result};
 use aurora_app::window::MainWindow;
 use std::num::NonZeroU32;
 use winit::raw_window_handle::HasWindowHandle;
 
+const WINDOW_WIDTH: f32 = 800.0;
+const WINDOW_HEIGHT: f32 = 600.0;
+const WINDOW_TITLE: &str = "egui_glow example";
+
 /// Manages the OpenGL context, surface, and window for the application.
 pub struct GlutinWindowContext {
     window: MainWindow,
+    pub gl_context: glutin::context::PossiblyCurrentContext,
+    pub gl_display: glutin::display::Display,
+    pub gl_surface: glutin::surface::Surface<glutin::surface::WindowSurface>,
+}
+
+struct RawGlContext {
     gl_context: glutin::context::PossiblyCurrentContext,
     gl_display: glutin::display::Display,
     gl_surface: glutin::surface::Surface<glutin::surface::WindowSurface>,
 }
 
-impl GlutinWindowContext {
-    /// Creates a new GL context and window.
-    ///
-    /// # Safety
-    /// This function contains unsafe blocks required by glutin for context creation
-    /// and surface creation. These are safe when called from the main thread with
-    /// a valid event loop.
-    pub unsafe fn new(event_loop: &winit::event_loop::ActiveEventLoop) -> Result<Self> {
+impl RawGlContext {
+    unsafe fn new(
+        event_loop: &winit::event_loop::ActiveEventLoop,
+        window_attributes: winit::window::WindowAttributes,
+    ) -> Result<(winit::window::Window, Self)> {
         use glutin::context::NotCurrentGlContext;
         use glutin::display::GetGlDisplay;
         use glutin::display::GlDisplay;
         use glutin::prelude::GlSurface;
 
-        let winit_window_builder = winit::window::WindowAttributes::default()
-            .with_resizable(true)
-            .with_inner_size(winit::dpi::LogicalSize {
-                width: AppConfig::WINDOW_WIDTH,
-                height: AppConfig::WINDOW_HEIGHT,
-            })
-            .with_title(AppConfig::WINDOW_TITLE)
-            .with_visible(false);
+        let winit_window_builder = window_attributes;
 
         let config_template_builder = glutin::config::ConfigTemplateBuilder::new()
             .prefer_hardware_accelerated(None)
@@ -115,20 +114,64 @@ impl GlutinWindowContext {
             )
             .map_err(|e| AppError::SwapInterval(e.to_string()))?;
 
+        Ok((
+            window,
+            Self {
+                gl_context,
+                gl_display,
+                gl_surface,
+            },
+        ))
+    }
+}
+
+impl GlutinWindowContext {
+    /// Creates a new GL context and window.
+    ///
+    /// # Safety
+    /// This function contains unsafe blocks required by glutin for context creation
+    /// and surface creation. These are safe when called from the main thread with
+    /// a valid event loop.
+    pub unsafe fn new(event_loop: &winit::event_loop::ActiveEventLoop) -> Result<Self> {
+        let window_attributes = winit::window::WindowAttributes::default()
+            .with_resizable(true)
+            .with_inner_size(winit::dpi::LogicalSize {
+                width: WINDOW_WIDTH,
+                height: WINDOW_HEIGHT,
+            })
+            .with_title(WINDOW_TITLE)
+            .with_visible(false);
+        unsafe { Self::new_with_attributes(event_loop, window_attributes) }
+    }
+
+    pub unsafe fn new_with_attributes(
+        event_loop: &winit::event_loop::ActiveEventLoop,
+        window_attributes: winit::window::WindowAttributes,
+    ) -> Result<Self> {
+        let (window, raw) = unsafe { RawGlContext::new(event_loop, window_attributes)? };
+
         let window = MainWindow::new(window);
-        window.set_statusbar_visible(AppConfig::STATUSBAR_VISIBLE);
-        window.set_background_visible(AppConfig::BACKGROUND_VISIBLE);
+        window.set_statusbar_visible(true);
+        window.set_background_visible(true);
 
         Ok(Self {
             window,
-            gl_context,
-            gl_display,
-            gl_surface,
+            gl_context: raw.gl_context,
+            gl_display: raw.gl_display,
+            gl_surface: raw.gl_surface,
         })
     }
 
     pub fn window(&self) -> &winit::window::Window {
         self.window.window()
+    }
+
+    pub fn main_window(&self) -> &aurora_app::window::MainWindow {
+        &self.window
+    }
+
+    pub fn main_window_mut(&mut self) -> &mut aurora_app::window::MainWindow {
+        &mut self.window
     }
 
     pub fn resize(&self, physical_size: winit::dpi::PhysicalSize<u32>) {
@@ -153,7 +196,36 @@ impl GlutinWindowContext {
     }
 }
 
-/// Creates the display and GL context.
+/// GL context for the cover window.
+pub struct CoverGlContext {
+    pub window: winit::window::Window,
+    pub gl_context: glutin::context::PossiblyCurrentContext,
+    pub gl_display: glutin::display::Display,
+    pub gl_surface: glutin::surface::Surface<glutin::surface::WindowSurface>,
+}
+
+impl CoverGlContext {
+    pub fn resize(&self, physical_size: winit::dpi::PhysicalSize<u32>) {
+        use glutin::surface::GlSurface;
+        let width = NonZeroU32::new(physical_size.width.max(1)).unwrap();
+        let height = NonZeroU32::new(physical_size.height.max(1)).unwrap();
+        self.gl_surface.resize(&self.gl_context, width, height);
+    }
+
+    pub fn swap_buffers(&self) -> Result<()> {
+        use glutin::surface::GlSurface;
+        self.gl_surface
+            .swap_buffers(&self.gl_context)
+            .map_err(|e| AppError::GlContextCreation(e.to_string()))
+    }
+
+    pub fn get_proc_address(&self, addr: &std::ffi::CStr) -> *const std::ffi::c_void {
+        use glutin::display::GlDisplay;
+        self.gl_display.get_proc_address(addr)
+    }
+}
+
+/// Creates the display and GL context for the main window.
 ///
 /// # Safety
 /// Must be called from the main thread with a valid event loop.
@@ -173,4 +245,36 @@ pub unsafe fn create_display(
     };
 
     Ok((glutin_window_context, gl))
+}
+
+/// Creates the display and GL context for the cover window.
+///
+/// # Safety
+/// Must be called from the main thread with a valid event loop.
+pub unsafe fn create_cover_display(
+    event_loop: &winit::event_loop::ActiveEventLoop,
+) -> Result<(CoverGlContext, glow::Context)> {
+    let window_attributes = winit::window::WindowAttributes::default()
+        .with_visible(false);
+
+    // SAFETY: Caller must ensure this is called from main thread with valid event loop.
+    let (window, raw) = unsafe { RawGlContext::new(event_loop, window_attributes)? };
+
+    let ctx = CoverGlContext {
+        window,
+        gl_context: raw.gl_context,
+        gl_display: raw.gl_display,
+        gl_surface: raw.gl_surface,
+    };
+
+    // SAFETY: from_loader_function is unsafe because the caller must ensure
+    // the loader function is valid for the lifetime of the Context.
+    let gl = unsafe {
+        glow::Context::from_loader_function(|s| {
+            let s = std::ffi::CString::new(s).expect("failed to construct C string");
+            ctx.get_proc_address(&s)
+        })
+    };
+
+    Ok((ctx, gl))
 }

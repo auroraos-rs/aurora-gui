@@ -1,176 +1,74 @@
-use crate::config::AppConfig;
-use crate::gl_context::{create_display, GlutinWindowContext};
-use crate::ui::{draw_ui, UiState};
-use egui_glow;
-use std::sync::Arc;
+/// Trait for Aurora egui applications.
+///
+/// All methods have default implementations, so you only need to implement what you need.
+/// The minimum requirement is [`App::update`](Self::update).
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use aurora_egui::{App, Frame};
+///
+/// struct MyApp;
+///
+/// impl App for MyApp {
+///     fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
+///         egui::CentralPanel::default().show(ctx, |ui| {
+///             ui.label("Hello, Aurora!");
+///         });
+///     }
+/// }
+/// ```
+pub trait App {
+    /// Called each frame to draw the main UI (**required**).
+    ///
+    /// Put your widgets into [`egui::Panel`], [`egui::CentralPanel`], [`egui::Window`], etc.
+    fn update(&mut self, ctx: &egui::Context, frame: &mut crate::Frame);
 
-#[derive(Debug)]
-pub enum UserEvent {
-    Redraw(std::time::Duration),
-}
+    // -- Lifecycle (optional) --
 
-pub struct GlowApp {
-    proxy: winit::event_loop::EventLoopProxy<UserEvent>,
-    gl_window: Option<GlutinWindowContext>,
-    gl: Option<Arc<glow::Context>>,
-    egui_glow: Option<egui_glow::EguiGlow>,
-    repaint_delay: std::time::Duration,
-    ui_state: UiState,
-}
+    /// Called before shutdown to save state.
+    ///
+    /// Only called if persistent storage is available.
+    fn save(&mut self, _storage: &mut dyn crate::Storage) {}
 
-impl GlowApp {
-    pub fn new(proxy: winit::event_loop::EventLoopProxy<UserEvent>) -> Self {
-        Self {
-            proxy,
-            gl_window: None,
-            gl: None,
-            egui_glow: None,
-            repaint_delay: std::time::Duration::MAX,
-            ui_state: UiState::default(),
-        }
+    /// Called once on shutdown, after [`save`](Self::save).
+    fn on_exit(&mut self) {}
+
+    /// Background clear color.
+    ///
+    /// Defaults to dark gray.
+    fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
+        egui::Color32::TRANSPARENT.to_normalized_gamma_f32()
     }
 
-    fn redraw(
-        &mut self,
-        event_loop: &winit::event_loop::ActiveEventLoop,
-    ) {
-        let mut quit = false;
+    // -- Aurora-specific (optional) --
 
-        self.egui_glow
-            .as_mut()
-            .unwrap()
-            .run(self.gl_window.as_ref().unwrap().window(), |ui| {
-                quit = draw_ui(ui, &mut self.ui_state);
-            });
+    /// Render the cover page (app switcher view).
+    ///
+    /// Called when the app is backgrounded and the cover window is shown.
+    /// Use this to display a summary or quick actions.
+    fn cover_ui(&mut self, _ctx: &egui::Context) {}
 
-        if quit {
-            event_loop.exit();
-            return;
-        }
-
-        event_loop.set_control_flow(if self.repaint_delay.is_zero() {
-            self.gl_window.as_ref().unwrap().window().request_redraw();
-            winit::event_loop::ControlFlow::Poll
-        } else if let Some(repaint_after_instant) =
-            std::time::Instant::now().checked_add(self.repaint_delay)
-        {
-            winit::event_loop::ControlFlow::WaitUntil(repaint_after_instant)
-        } else {
-            winit::event_loop::ControlFlow::Wait
-        });
-
-        {
-            unsafe {
-                use glow::HasContext;
-                self.gl.as_ref().unwrap().clear_color(
-                    self.ui_state.clear_color[0],
-                    self.ui_state.clear_color[1],
-                    self.ui_state.clear_color[2],
-                    1.0,
-                );
-                self.gl.as_ref().unwrap().clear(glow::COLOR_BUFFER_BIT);
-            }
-
-            self.egui_glow
-                .as_mut()
-                .unwrap()
-                .paint(self.gl_window.as_ref().unwrap().window());
-
-            self.gl_window.as_ref().unwrap().swap_buffers().unwrap();
-            self.gl_window.as_ref().unwrap().window().set_visible(true);
-        }
+    /// Define cover action buttons.
+    ///
+    /// These buttons are rendered by the Aurora OS compositor on the cover page.
+    /// Click callbacks are not yet supported in v1 (display only).
+    fn cover_actions(&self) -> Vec<crate::CoverAction> {
+        vec![]
     }
 }
 
-impl winit::application::ApplicationHandler<UserEvent> for GlowApp {
-    fn resumed(&mut self,
-        event_loop: &winit::event_loop::ActiveEventLoop,
-    ) {
-        let (gl_window, gl) = unsafe { create_display(event_loop) }
-            .expect("failed to create display");
-        let gl = Arc::new(gl);
-        gl_window.window().set_visible(true);
+/// Persistent storage trait.
+///
+/// Implemented by the integration to provide load/save of app state.
+/// On Aurora OS this may be backed by the file system.
+pub trait Storage {
+    /// Get the value for the given key.
+    fn get_string(&self, key: &str) -> Option<String>;
 
-        let egui_glow = egui_glow::EguiGlow::new(
-            event_loop,
-            Arc::clone(&gl),
-            None,
-            None,
-            true,
-        );
-        egui_glow.egui_ctx.set_pixels_per_point(AppConfig::PIXELS_PER_POINT);
+    /// Set the value for the given key.
+    fn set_string(&mut self, key: &str, value: String);
 
-        let event_loop_proxy = egui::mutex::Mutex::new(self.proxy.clone());
-        egui_glow
-            .egui_ctx
-            .set_request_repaint_callback(move |info| {
-                event_loop_proxy
-                    .lock()
-                    .send_event(UserEvent::Redraw(info.delay))
-                    .expect("Cannot send event");
-            });
-
-        self.gl_window = Some(gl_window);
-        self.gl = Some(gl);
-        self.egui_glow = Some(egui_glow);
-    }
-
-    fn window_event(
-        &mut self,
-        event_loop: &winit::event_loop::ActiveEventLoop,
-        _window_id: winit::window::WindowId,
-        event: winit::event::WindowEvent,
-    ) {
-        use winit::event::WindowEvent;
-
-        if matches!(event, WindowEvent::CloseRequested | WindowEvent::Destroyed) {
-            event_loop.exit();
-            return;
-        }
-
-        if matches!(event, WindowEvent::RedrawRequested) {
-            self.redraw(event_loop);
-            return;
-        }
-
-        if let WindowEvent::Resized(physical_size) = &event {
-            self.gl_window.as_ref().unwrap().resize(*physical_size);
-        }
-
-        let event_response = self
-            .egui_glow
-            .as_mut()
-            .unwrap()
-            .on_window_event(self.gl_window.as_ref().unwrap().window(), &event);
-
-        if event_response.repaint {
-            self.gl_window.as_ref().unwrap().window().request_redraw();
-        }
-    }
-
-    fn user_event(
-        &mut self,
-        _event_loop: &winit::event_loop::ActiveEventLoop,
-        event: UserEvent,
-    ) {
-        match event {
-            UserEvent::Redraw(delay) => self.repaint_delay = delay,
-        }
-    }
-
-    fn new_events(
-        &mut self,
-        _event_loop: &winit::event_loop::ActiveEventLoop,
-        cause: winit::event::StartCause,
-    ) {
-        if let winit::event::StartCause::ResumeTimeReached { .. } = &cause {
-            self.gl_window.as_ref().unwrap().window().request_redraw();
-        }
-    }
-
-    fn exiting(&mut self, _event_loop: &winit::event_loop::ActiveEventLoop) {
-        if let Some(mut egui_glow) = self.egui_glow.take() {
-            egui_glow.destroy();
-        }
-    }
+    /// Flush changes to disk.
+    fn flush(&mut self);
 }
