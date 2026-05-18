@@ -1,0 +1,12 @@
+[package]
+name = "aurora_app"
+version = "0.1.0"
+edition = "2024"
+description = "Aurora OS window property helpers for winit"
+authors = ["Maksim Leiman <maximleyman@yandex.ru>"]
+license = "Apache 2.0"
+
+[dependencies]
+winit = { git = "https://github.com/lmaxyz/winit", branch = "rm_maliit", features = ["wayland"] }
+maliit = { git = "https://github.com/auroraos-rs/maliit" }
+log = "0.4"
