@@ -111,6 +111,11 @@ impl CoverWindow {
         self.aurora_window.window()
     }
 
+    /// Access the underlying Aurora cover window.
+    pub fn aurora_window(&self) -> &aurora_app::window::CoverWindow {
+        &self.aurora_window
+    }
+
     /// Get the window ID.
     pub fn window_id(&self) -> winit::window::WindowId {
         self.aurora_window.window().id()

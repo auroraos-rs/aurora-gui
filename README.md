@@ -1,15 +1,14 @@
-# egui_aurora_app
+# aurora-gui
 
-A GUI application framework for [Aurora OS](https://auroraos.ru/).
+A GUI toolkit for [Aurora OS](https://auroraos.ru/).
 
-This workspace provides crates for building GUI apps that run natively on Aurora OS (Sailfish-derived Linux) and also work on desktop Linux for development. While the current focus is on [egui](https://github.com/emilk/egui) support, the workspace is structured to accommodate additional GUI libraries in the future (e.g. `iced_aurora_app`).
+This workspace provides crates for building GUI apps that run natively on Aurora OS (Sailfish-derived Linux) and also work on desktop Linux for development. While the current focus is on [egui](https://github.com/emilk/egui) support, the workspace is structured to accommodate additional GUI libraries in the future (e.g. `aurora_iced`).
 
 ## Workspace Crates
 
 | Crate | Purpose |
 |-------|---------|
 | [`aurora_app`](aurora_app/) | GUI-agnostic window property helpers for Aurora OS (Wayland generic properties, cover window linkage) |
-| [`aurora_services`](aurora_services/) | Platform service wrappers — DConf settings, DBus notifications, device info |
 | [`aurora_egui`](aurora_egui/) | egui integration — runs an egui app with GL rendering, cover page, and system font support |
 | [`demo`](demo/) | Example egui application demonstrating all features |
 

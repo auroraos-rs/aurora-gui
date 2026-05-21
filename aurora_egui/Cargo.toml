@@ -9,7 +9,7 @@ license = "Apache 2.0"
 [dependencies]
 winit = { git = "https://github.com/lmaxyz/winit", branch = "rm_maliit", default-features = false, features = ["wayland", "wayland-dlopen", "rwh_06"] }
 aurora_app = { path = "../aurora_app" }
-aurora_services = { path = "../aurora_services" }
+aurora_services = { path = "../../aurora_services" }
 glutin = { git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
 glutin-winit = { version = "0.5.0" }
 glow = "0.17.0"

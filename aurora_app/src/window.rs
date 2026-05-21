@@ -5,13 +5,20 @@ use crate::types::CoverAction;
 
 pub use maliit::MaliitError as ImeError;
 
+use std::sync::atomic::{AtomicU64, Ordering};
+
+static WINDOW_COUNTER: AtomicU64 = AtomicU64::new(1);
+
+fn next_window_id() -> u64 {
+    WINDOW_COUNTER.fetch_add(1, Ordering::Relaxed)
+}
+
 // ------------------------------------------------------------------------------
 // Free functions — internal helpers, not part of the public API
 // ------------------------------------------------------------------------------
 
-fn set_main_window_id(window: &Window) {
-    let win_id: u64 = window.id().into();
-    window.update_generic_property("WINID", qv::from_u64(win_id));
+fn set_main_window_id(window: &Window, id: u64) {
+    window.update_generic_property("WINID", qv::from_u64(id));
 }
 
 fn set_statusbar_visible(window: &Window, visible: bool) {
@@ -22,9 +29,8 @@ fn set_background_visible(window: &Window, visible: bool) {
     window.update_generic_property("BACKGROUND_VISIBLE", qv::from_bool(visible));
 }
 
-fn set_cover_window_properties(window: &Window) {
-    let win_id: u64 = window.id().into();
-    window.update_generic_property("WINID", qv::from_u64(win_id));
+fn set_cover_window_properties(window: &Window, id: u64) {
+    window.update_generic_property("WINID", qv::from_u64(id));
     window.update_generic_property("CATEGORY", qv::from_str("cover"));
     window.update_generic_property("TRANSPARENT", qv::from_bool(false));
 }
@@ -33,12 +39,11 @@ fn set_cover_transparent(window: &Window, transparent: bool) {
     window.update_generic_property("TRANSPARENT", qv::from_bool(transparent));
 }
 
-fn link_cover_to_main(main: &Window, cover: &Window) {
-    let cover_win_id: u64 = cover.id().into();
+fn link_cover_to_main(main: &Window, cover_id: u64) {
     main.update_generic_property("SAILFISH_HAVE_COVER", qv::from_bool(true));
     main.update_generic_property(
         "SAILFISH_COVER_WINDOW",
-        qv::from_string(format!("__winref:{}", cover_win_id)),
+        qv::from_string(format!("__winref:{}", cover_id)),
     );
 }
 
@@ -47,8 +52,8 @@ fn clear_cover_linkage(main: &Window) {
     main.update_generic_property("SAILFISH_COVER_WINDOW", qv::from_str(""));
 }
 
-fn refresh_cover_window_properties(window: &Window) {
-    set_cover_window_properties(window);
+fn refresh_cover_window_properties(window: &Window, id: u64) {
+    set_cover_window_properties(window, id);
 }
 
 fn set_main_window_cover_actions(window: &Window, app_id: &str, actions: &[CoverAction]) {
@@ -72,12 +77,14 @@ fn set_main_window_cover_actions(window: &Window, app_id: &str, actions: &[Cover
 /// and IME integration.
 pub struct MainWindow {
     window: Window,
+    id: u64,
     input_method: Option<maliit::input_method::InputMethod>,
 }
 
 impl MainWindow {
     pub fn new(window: Window) -> Self {
-        set_main_window_id(&window);
+        let id = next_window_id();
+        set_main_window_id(&window, id);
         set_background_visible(&window, true);
 
         let input_method = maliit::input_method::InputMethod::new().ok();
@@ -87,6 +94,7 @@ impl MainWindow {
 
         Self {
             window,
+            id,
             input_method,
         }
     }
@@ -95,14 +103,18 @@ impl MainWindow {
         &self.window
     }
 
+    pub fn window_id(&self) -> u64 {
+        self.id
+    }
+
     /// Link a cover window without taking ownership.
     pub fn link_cover(&self, cover: &CoverWindow) {
-        link_cover_to_main(&self.window, cover.window());
+        link_cover_to_main(&self.window, cover.window_id());
     }
 
     /// Refresh cover linkage properties on the main window.
-    pub fn refresh_cover_linkage(&self, cover: &Window) {
-        link_cover_to_main(&self.window, cover);
+    pub fn refresh_cover_linkage(&self, cover: &CoverWindow) {
+        link_cover_to_main(&self.window, cover.window_id());
     }
 
     /// Clear cover linkage properties from the main window.
@@ -131,7 +143,10 @@ impl MainWindow {
     ///
     /// This is the preferred way to open the keyboard — it sends
     /// `focusState=true` so the server knows a text widget is active.
-    pub fn show_ime_with_info(&mut self, info: &maliit::input_method::WidgetInfo) -> Result<(), ImeError> {
+    pub fn show_ime_with_info(
+        &mut self,
+        info: &maliit::input_method::WidgetInfo,
+    ) -> Result<(), ImeError> {
         if let Some(ref mut im) = self.input_method {
             im.show_with_info(info)?;
         }
@@ -216,21 +231,27 @@ impl MainWindow {
 /// Wrapper around a cover window that manages Aurora OS properties.
 pub struct CoverWindow {
     window: Window,
+    id: u64,
 }
 
 impl CoverWindow {
     pub fn new(window: Window) -> Self {
-        set_cover_window_properties(&window);
-        Self { window }
+        let id = next_window_id();
+        set_cover_window_properties(&window, id);
+        Self { window, id }
     }
 
     pub fn window(&self) -> &Window {
         &self.window
     }
 
+    pub fn window_id(&self) -> u64 {
+        self.id
+    }
+
     /// Link this cover window to the given main window.
     pub fn link_to_main(&self, main: &MainWindow) {
-        link_cover_to_main(main.window(), &self.window);
+        link_cover_to_main(main.window(), self.id);
     }
 
     pub fn set_transparent(&self, is_transparent: bool) {
@@ -239,6 +260,6 @@ impl CoverWindow {
 
     /// Refresh Aurora compositor properties on this cover window.
     pub fn refresh_properties(&self) {
-        refresh_cover_window_properties(&self.window);
+        refresh_cover_window_properties(&self.window, self.id);
     }
 }

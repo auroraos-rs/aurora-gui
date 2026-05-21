@@ -8,6 +8,7 @@ license = "Apache 2.0"
 
 [dependencies]
 aurora_egui = { path = "../aurora_egui" }
+aurora_services = { path = "../../aurora_services" }
 egui = "0.34.2"
 env_logger = "0.11"
 log = "0.4"

@@ -81,7 +81,6 @@ impl AuroraRunner {
             storage: None,
             pixel_ratio: self.platform.system_pixel_ratio,
             statusbar_height: self.platform.statusbar_height,
-            font_settings: self.platform.font_settings.clone(),
         };
         let app_creator = self
             .app_state
@@ -101,7 +100,7 @@ impl AuroraRunner {
         // matching the Flutter embedder pattern where UpdateProperties is called
         // after both windows are visible.
         cover_window.refresh_properties();
-        main_window.refresh_cover_linkage(cover_window.window());
+        main_window.refresh_cover_linkage(cover_window.aurora_window());
 
         // Apply the same system font settings to the cover context
         if let Some(ref font_settings) = self.platform.font_settings {

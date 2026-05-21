@@ -20,6 +20,19 @@ The default page showing:
 
 A scrollable, alphabetically sorted list of all environment variables displayed in a monospace grid.
 
+### Notifications
+
+Interactive notification testing page:
+- Editable title, body, and urgency level
+- **Show Notification** — sends via `NotificationService`
+- **Close Last** — closes the most recently shown notification
+- **Capabilities** / **Server Info** — queries the D-Bus notification daemon
+- Status label showing the last result or error
+
+### Runtime Dir
+
+Interactive file browser for `XDG_RUNTIME_DIR` (the app's sandboxed runtime directory on Aurora OS). Supports navigation (Root / Up), refresh, and name filtering.
+
 ## Cover Page
 
 When the app is backgrounded on Aurora OS, the cover page shows:

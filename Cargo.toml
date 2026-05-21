@@ -1,5 +1,5 @@
 [workspace]
-members = ["aurora_app", "aurora_services", "aurora_egui", "demo"]
+members = ["aurora_app", "aurora_egui", "demo"]
 resolver = "2"
 
 [patch.crates-io]

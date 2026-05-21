@@ -8,15 +8,12 @@ Provides wrappers around `winit::window::Window` for setting Aurora-specific Way
 
 ```rust
 use winit::event_loop::EventLoop;
-use aurora_app::window::{MainWindow, CoverWindow, set_main_window_id};
+use aurora_app::window::{MainWindow, CoverWindow};
 
 let event_loop = EventLoop::new().unwrap();
 let window = event_loop.create_window(Default::default()).unwrap();
 
-// Set the main window ID for the compositor
-set_main_window_id(&window);
-
-// Or use the wrapper type
+// Wrap the window — this sets WINID and other main-window properties
 let main_window = MainWindow::new(window);
 main_window.set_statusbar_visible(true);
 
@@ -40,21 +37,23 @@ main_window.link_cover(&cover);
 
 | Method | Description |
 |--------|-------------|
-| `new(window: Window) -> Self` | Wrap a raw winit window |
+| `new(window: Window) -> Self` | Wrap a raw winit window; assigns a small sequential `WINID` |
 | `window() -> &Window` | Access the underlying window |
+| `window_id() -> u64` | The small sequential ID used for `WINID` and `__winref:` |
 | `set_statusbar_visible(bool)` | Sets `STATUSBAR_VISIBLE` property |
 | `set_cover_actions(app_id, &[CoverAction])` | Sets `_APP_COVER_ACTION` for the compositor |
-| `link_cover(&CoverWindow)` | Links cover window to main window |
+| `link_cover(&CoverWindow)` | Links cover window to main window via `SAILFISH_COVER_WINDOW` |
 | `into_inner() -> Window` | Unwrap the winit window |
 
 ### `CoverWindow`
 
 | Method | Description |
 |--------|-------------|
-| `new(window: Window) -> Self` | Wrap a window with cover properties |
+| `new(window: Window) -> Self` | Wrap a window with cover properties; assigns a small sequential `WINID` |
 | `window() -> &Window` | Access the underlying window |
+| `window_id() -> u64` | The small sequential ID used for `WINID` and `__winref:` |
 | `set_transparent(bool)` | Sets `TRANSPARENT` property |
-| `win_ref_str() -> String` | Returns the window reference string for linkage |
+| `link_to_main(&MainWindow)` | Links this cover to the main window |
 
 ### `CoverAction`
 

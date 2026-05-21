@@ -86,7 +86,6 @@ pub struct CreationContext {
     pub storage: Option<Box<dyn Storage>>,
     pub pixel_ratio: f32,
     pub statusbar_height: f32,
-    pub font_settings: Option<aurora_services::FontSettings>,
 }
 ```
 

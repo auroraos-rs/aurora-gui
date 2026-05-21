@@ -79,7 +79,4 @@ pub struct CreationContext {
 
     /// The height of the system status bar in logical pixels.
     pub statusbar_height: f32,
-
-    /// System font settings, if available.
-    pub font_settings: Option<aurora_services::FontSettings>,
 }
