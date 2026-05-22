@@ -9,8 +9,8 @@ authors = ["Maksim Leiman <maximleyman@yandex.ru>"]
 license = "Apache-2.0"
 
 [workspace.dependencies]
-winit = { git = "https://github.com/lmaxyz/winit", branch = "rm_maliit", default-features = false }
-glutin = { git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
+winit = { version = "0.30", git = "https://github.com/lmaxyz/winit", branch = "rm_maliit", default-features = false }
+glutin = { version = "0.32", git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
 egui = "0.34.2"
 egui_glow = { version = "0.34.2", features = ["wayland", "winit"] }
 egui-winit = "0.34.2"
@@ -23,6 +23,8 @@ thiserror = "2.0"
 maliit = "0.2.0"
 glutin-winit = "0.5.0"
 env_logger = "0.11"
+aurora_app = { version="0.1.0", path = "./aurora_app" }
+aurora_egui = { version="0.1.0", path = "./aurora_egui" }
 
 [patch.crates-io]
 winit = { git = "https://github.com/lmaxyz/winit", branch = "rm_maliit" }

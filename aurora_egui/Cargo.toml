@@ -8,8 +8,8 @@ license.workspace = true
 
 [dependencies]
 winit = { workspace = true, default-features = false, features = ["wayland", "wayland-dlopen", "rwh_06"] }
-aurora_app = { path = "../aurora_app" }
 aurora_services = { workspace = true }
+aurora_app = { workspace = true }
 glutin = { workspace = true }
 glutin-winit = { workspace = true }
 glow = { workspace = true }
