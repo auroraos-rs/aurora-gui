@@ -5,8 +5,14 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+repository.workspace = true
 
 [dependencies]
 winit = { workspace = true, default-features = true, features = ["wayland"] }
 maliit = { workspace = true }
 log = { workspace = true }
+
+[patch.crates-io]
+winit = { git = "https://github.com/lmaxyz/winit", branch = "rm_maliit" }
+glutin = { git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
+egui-winit = { git = "https://github.com/lmaxyz/egui/", branch = "more_flexible_egui-winit" }
