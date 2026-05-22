@@ -1,22 +1,22 @@
 [package]
 name = "aurora_egui"
-version = "0.1.0"
-edition = "2024"
 description = "Library for building egui apps on Aurora OS"
-authors = ["Maksim Leiman <maximleyman@yandex.ru>"]
-license = "Apache 2.0"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
 
 [dependencies]
-winit = { git = "https://github.com/lmaxyz/winit", branch = "rm_maliit", default-features = false, features = ["wayland", "wayland-dlopen", "rwh_06"] }
+winit = { workspace = true, default-features = false, features = ["wayland", "wayland-dlopen", "rwh_06"] }
 aurora_app = { path = "../aurora_app" }
-aurora_services = { path = "../../aurora_services" }
-glutin = { git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
-glutin-winit = { version = "0.5.0" }
-glow = "0.17.0"
-egui = "0.34.2"
-egui_glow = { version = "0.34.2", features = ["wayland", "winit"] }
-egui-rotate = "0.1.3"
-egui-winit = "0.34.2"
-fontdb = "0.23"
-log = "0.4"
-thiserror = "2.0"
+aurora_services = { workspace = true }
+glutin = { workspace = true }
+glutin-winit = { workspace = true }
+glow = { workspace = true }
+egui = { workspace = true }
+egui_glow = { workspace = true }
+egui-rotate = { workspace = true }
+egui-winit = { workspace = true }
+fontdb = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }

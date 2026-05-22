@@ -1,17 +1,17 @@
 [package]
 name = "demo"
-version = "0.1.0"
-edition = "2024"
 description = "Demo application for aurora_egui"
-authors = ["Maksim Leiman <maximleyman@yandex.ru>"]
-license = "Apache-2.0"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
 
 [dependencies]
 aurora_egui = { path = "../aurora_egui" }
-aurora_services = { version = "0.1.0" }
-egui = "0.34.2"
-env_logger = "0.11"
-log = "0.4"
+aurora_services = { workspace = true }
+egui = { workspace = true }
+env_logger = { workspace = true }
+log = { workspace = true }
 
 [package.metadata.generate-rpm]
 name = "com.lmaxyz.egui_aurora_app"
