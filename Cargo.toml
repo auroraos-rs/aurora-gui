@@ -14,7 +14,7 @@ winit = { version = "0.30", git = "https://github.com/lmaxyz/winit", branch = "r
 glutin = { version = "0.32", git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
 egui = "0.34.2"
 egui_glow = { version = "0.34.2", features = ["wayland", "winit"] }
-egui-winit = { version = "0.34.2", git = "https://github.com/lmaxyz/egui/", branch = "more_flexible_egui-winit" }
+egui-winit = "0.34.2"
 egui-rotate = "0.1.3"
 log = "0.4"
 glow = "0.17.0"
