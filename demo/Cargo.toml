@@ -8,7 +8,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-aurora_egui = { path = "../aurora_egui" }
+aurora_egui = { workspace = true }
 aurora_services = { workspace = true }
 egui = { workspace = true }
 env_logger = { workspace = true }
