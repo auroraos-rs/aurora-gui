@@ -38,14 +38,13 @@ struct DemoApp {
     runtime_dir_current: String,
     runtime_dir_entries: Vec<(String, bool)>,
     runtime_dir_filter: String,
-
 }
 
 impl App for DemoApp {
     fn update(&mut self, ui: &mut egui::Ui, frame: &mut Frame) {
         egui::Panel::top("top_bar").show_inside(ui, |ui| {
             ui.horizontal(|ui| {
-                if ui.button("☰").clicked() {
+                if ui.button(RichText::new("☰").size(32.)).clicked() {
                     self.show_menu = !self.show_menu;
                 }
                 ui.heading(match self.current_page {
@@ -461,7 +460,6 @@ impl DemoApp {
             }
         }
     }
-
 }
 
 fn read_dir_entries(path: &str) -> Vec<(String, bool)> {
