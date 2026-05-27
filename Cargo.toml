@@ -32,3 +32,4 @@ winit = { git = "https://github.com/lmaxyz/winit", branch = "rm_maliit" }
 glutin = { git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
 egui = { git = "https://github.com/lmaxyz/egui/", branch = "aurora_winit" }
 egui-winit = { git = "https://github.com/lmaxyz/egui/", branch = "aurora_winit" }
+egui_glow = { git = "https://github.com/lmaxyz/egui/", branch = "aurora_winit" }
