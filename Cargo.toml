@@ -3,7 +3,7 @@ members = ["aurora_app", "aurora_egui", "demo"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 authors = ["Maksim Leiman <maximleyman@yandex.ru>"]
 license = "Apache-2.0"
@@ -12,9 +12,9 @@ repository = "https://github.com/auroraos-rs/aurora-gui"
 [workspace.dependencies]
 winit = { version = "0.30", git = "https://github.com/lmaxyz/winit", branch = "rm_maliit", default-features = false }
 glutin = { version = "0.32", git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
-egui = "0.34.2"
-egui_glow = { version = "0.34.2", features = ["wayland", "winit"] }
-egui-winit = "0.34.2"
+egui = "0.34.3"
+egui_glow = { version = "0.34.3", features = ["wayland", "winit"] }
+egui-winit = "0.34.3"
 egui-rotate = "0.1.3"
 log = "0.4"
 glow = "0.17.0"
@@ -30,4 +30,5 @@ aurora_egui = { version="0.1.0", path = "./aurora_egui" }
 [patch.crates-io]
 winit = { git = "https://github.com/lmaxyz/winit", branch = "rm_maliit" }
 glutin = { git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
-egui-winit = { git = "https://github.com/lmaxyz/egui/", branch = "more_flexible_egui-winit" }
+egui = { git = "https://github.com/lmaxyz/egui/", branch = "aurora_winit" }
+egui-winit = { git = "https://github.com/lmaxyz/egui/", branch = "aurora_winit" }
