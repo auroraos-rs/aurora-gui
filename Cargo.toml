@@ -10,7 +10,7 @@ license = "Apache-2.0"
 repository = "https://github.com/auroraos-rs/aurora-gui"
 
 [workspace.dependencies]
-winit = { version = "0.30", git = "https://github.com/lmaxyz/winit", branch = "rm_maliit", default-features = false }
+winit = { git = "https://github.com/lmaxyz/winit", branch = "rm_maliit", default-features = false }
 glutin = { version = "0.32", git = "https://github.com/lmaxyz/glutin", branch = "aurora_device_fix" }
 egui = "0.34.3"
 egui_glow = { version = "0.34.3", features = ["wayland", "winit"] }
