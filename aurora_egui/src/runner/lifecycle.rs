@@ -1,7 +1,7 @@
 use super::{AuroraRunner, UserEvent};
+use crate::CreationContext;
 use crate::cover::CoverWindow;
 use crate::gl_context::create_main_window;
-use crate::CreationContext;
 use std::sync::Arc;
 
 impl AuroraRunner {
@@ -66,7 +66,7 @@ impl AuroraRunner {
 
         let main_window_id = main_window.window().id();
 
-        self.main_state.rotation = None;
+        self.main_state.rotation = egui_rotate::Rotation::None;
         self.main_state.shapes = Default::default();
         self.main_state.pixels_per_point = self.platform.system_pixel_ratio;
         self.main_state.textures_delta = Default::default();
@@ -91,7 +91,12 @@ impl AuroraRunner {
 
         // -- Cover window --
         let cover_window = unsafe {
-            CoverWindow::new(event_loop, &main_window, &app_gl, self.platform.system_pixel_ratio)
+            CoverWindow::new(
+                event_loop,
+                &main_window,
+                &app_gl,
+                self.platform.system_pixel_ratio,
+            )
         }
         .expect("failed to create cover window");
         cover_window.window().set_visible(true);

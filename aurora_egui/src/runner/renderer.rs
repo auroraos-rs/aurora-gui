@@ -45,7 +45,7 @@ impl AuroraRunner {
         // instead of Panels, which can cause text-input focus loss.
         let is_landscape = matches!(
             self.main_state.rotation,
-            Some(egui_rotate::Rotation::CW90) | Some(egui_rotate::Rotation::CW270)
+            egui_rotate::Rotation::CW90 | egui_rotate::Rotation::CW270
         );
         // statusbar_height comes from aurora_services in physical pixels,
         // so convert to points before using as an inset.
@@ -74,9 +74,7 @@ impl AuroraRunner {
         // any previous insets when the keyboard or statusbar hides.
         raw_input.safe_area_insets = Some(egui::SafeAreaInsets(logical_insets));
 
-        if let Some(rotation) = self.main_state.rotation {
-            transform_raw_input(&mut raw_input, rotation);
-        }
+        transform_raw_input(&mut raw_input, self.main_state.rotation);
 
         let full_output =
             self.main_state
@@ -170,10 +168,12 @@ impl AuroraRunner {
             let mut clipped_primitives =
                 main_egui_glow.egui_ctx.tessellate(shapes, pixels_per_point);
 
-            if let Some(rotation) = self.main_state.rotation {
-                let logical_size = main_egui_glow.egui_ctx.viewport_rect().size();
-                transform_clipped_primitives(&mut clipped_primitives, rotation, logical_size);
-            }
+            let logical_size = main_egui_glow.egui_ctx.viewport_rect().size();
+            transform_clipped_primitives(
+                &mut clipped_primitives,
+                self.main_state.rotation,
+                logical_size,
+            );
 
             let dimensions: [u32; 2] = window.inner_size().into();
             main_egui_glow.painter.paint_primitives(

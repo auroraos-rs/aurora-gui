@@ -26,7 +26,7 @@ struct MainWindowState {
     aurora_window: Option<aurora_app::window::MainWindow>,
     egui_glow: Option<egui_glow::EguiGlow>,
     window_id: Option<winit::window::WindowId>,
-    rotation: Option<EguiRotation>,
+    rotation: EguiRotation,
     shapes: Vec<egui::epaint::ClippedShape>,
     pixels_per_point: f32,
     textures_delta: egui::TexturesDelta,
@@ -97,7 +97,7 @@ impl AuroraRunner {
                 aurora_window: None,
                 egui_glow: None,
                 window_id: None,
-                rotation: None,
+                rotation: EguiRotation::None,
                 shapes: Default::default(),
                 pixels_per_point: pixel_ratio,
                 textures_delta: Default::default(),
@@ -112,6 +112,7 @@ impl AuroraRunner {
                 repaint_delay: None,
                 frame: Frame {
                     statusbar_visible: native_options.statusbar_visible,
+                    rotation: EguiRotation::None,
                 },
                 native_options: native_options.clone(),
                 focused: true,
@@ -140,7 +141,9 @@ impl AuroraRunner {
         use winit::event::WindowEvent;
 
         if let WindowEvent::Transformed(transformed) = event {
-            self.main_state.rotation = rotation::transform_to_rotation(transformed);
+            let rotation = rotation::transform_to_rotation(transformed);
+            self.main_state.rotation = rotation;
+            self.platform.frame.rotation = rotation;
             if let Some(ref mut main) = self.main_state.aurora_window {
                 // winit Transform represents the compositor's counter-rotation to keep
                 // content upright. Inverting gives the physical device orientation.

@@ -1,9 +1,12 @@
+use egui_rotate::Rotation;
+
 /// Platform-agnostic frame handle passed to [`App::update`](crate::App::update) each frame.
 ///
 /// On Aurora OS this provides access to window properties like status bar visibility.
 /// On desktop most methods are no-ops for compatibility.
 pub struct Frame {
     pub(crate) statusbar_visible: bool,
+    pub(crate) rotation: Rotation,
 }
 
 impl Frame {
@@ -24,5 +27,9 @@ impl Frame {
     /// Returns whether the status bar is currently visible.
     pub fn is_statusbar_visible(&self) -> bool {
         self.statusbar_visible
+    }
+
+    pub fn is_landscape(&self) -> bool {
+        self.rotation == Rotation::CW90 || self.rotation == Rotation::CW270
     }
 }
