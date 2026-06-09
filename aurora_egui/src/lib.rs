@@ -66,6 +66,8 @@ pub use config::{CreationContext, NativeOptions};
 pub use error::{AppError, Result};
 pub use frame::Frame;
 
+pub use egui_rotate::Rotation;
+
 use runner::{AuroraRunner, UserEvent};
 
 /// Run the native application.

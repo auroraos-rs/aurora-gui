@@ -29,6 +29,10 @@ impl Frame {
         self.statusbar_visible
     }
 
+    pub fn rotation(&self) -> Rotation {
+        self.rotation
+    }
+
     pub fn is_landscape(&self) -> bool {
         self.rotation == Rotation::CW90 || self.rotation == Rotation::CW270
     }
